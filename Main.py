@@ -5,6 +5,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix, roc_curve
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
@@ -26,7 +27,7 @@ def evaluate_model(model, X_test, y_test, threshold=0.5):
     recall = recall_score(y_test, y_pred)
     f1 = f1_score(y_test, y_pred)
     roc_auc = roc_auc_score(y_test, y_prob)  # Use prob for ROC AUC
-    return accuracy, precision, recall, f1, roc_auc, y_pred
+    return accuracy, precision, recall, f1, roc_auc, y_pred, y_prob
 
 def get_model(model_option):
     if model_option == "Random Forest":
@@ -39,6 +40,12 @@ def get_model(model_option):
         model = grid_GaussianNB
     return model
 
+def find_optimal_threshold(y_true, y_prob):
+    fpr, tpr, thresholds = roc_curve(y_true, y_prob)
+    youdens_j = tpr - fpr
+    best_threshold = thresholds[np.argmax(youdens_j)]
+    return best_threshold
+
 # --- Main App ---
 
 # Title
@@ -48,7 +55,8 @@ st.title("🏦 Credit Risk Prediction Dashboard")
 st.sidebar.header("🔍 Model and Input Settings")
 model_option = st.sidebar.selectbox("Select Model", ["Random Forest", "SVM", "Naive Bayes"])
 use_smote = st.sidebar.checkbox("Apply SMOTE to Balance Classes (Recommended for Naive Bayes)", value=True)
-threshold = st.sidebar.slider("Decision Threshold", 0.0, 1.0, 0.5, 0.01)
+apply_pca = st.sidebar.checkbox("Apply PCA (Recommended for Naive Bayes)", value=True)
+n_components = st.sidebar.slider("Number of PCA Components", min_value=2, max_value=10, value=5)
 
 # Data Loading
 df = load_data()
@@ -74,12 +82,28 @@ if use_smote:
     smote = SMOTE(random_state=42)
     X_train, y_train = smote.fit_resample(X_train, y_train)
 
+# Apply PCA if selected
+if apply_pca:
+    pca = PCA(n_components=n_components)
+    X_train = pca.fit_transform(X_train)
+    X_test = pca.transform(X_test)
+
 # Get Model
 model = get_model(model_option)
 model.fit(X_train, y_train)
 
-# Evaluate Model
-accuracy, precision, recall, f1, roc_auc, y_test_pred = evaluate_model(model, X_test, y_test, threshold)
+# Predict Probabilities
+accuracy_default, precision_default, recall_default, f1_default, roc_auc_default, y_test_pred_default, y_prob = evaluate_model(model, X_test, y_test, 0.5)
+
+# Find Optimal Threshold (Youden's J)
+optimal_threshold = find_optimal_threshold(y_test, y_prob)
+
+# Sidebar - Threshold Tuning
+threshold = st.sidebar.slider("Decision Threshold", 0.0, 1.0, optimal_threshold, 0.01)
+st.sidebar.markdown(f"🧠 **Recommended Optimal Threshold (Youden's J): {optimal_threshold:.2f}**")
+
+# Evaluate with selected threshold
+accuracy, precision, recall, f1, roc_auc, y_test_pred, _ = evaluate_model(model, X_test, y_test, threshold)
 
 # Input Form
 st.sidebar.header("📝 Input Features")
@@ -105,6 +129,8 @@ input_data = pd.DataFrame({
 })
 
 input_data_scaled = scaler.transform(input_data)
+if apply_pca:
+    input_data_scaled = pca.transform(input_data_scaled)
 
 # Prediction
 if submit_button:
@@ -136,3 +162,15 @@ sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=["Low Risk", "Hig
 plt.xlabel("Predicted")
 plt.ylabel("True")
 st.pyplot(fig)
+
+# ROC Curve
+st.subheader("📈 ROC Curve")
+fpr, tpr, _ = roc_curve(y_test, y_prob)
+fig2, ax2 = plt.subplots()
+ax2.plot(fpr, tpr, color='blue', label=f"ROC curve (AUC = {roc_auc_default:.2f})")
+ax2.plot([0, 1], [0, 1], color='grey', linestyle='--')
+ax2.set_xlabel("False Positive Rate")
+ax2.set_ylabel("True Positive Rate")
+ax2.set_title("Receiver Operating Characteristic (ROC)")
+ax2.legend()
+st.pyplot(fig2)
