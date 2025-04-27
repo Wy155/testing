@@ -18,20 +18,17 @@ elif model_option == "XGBoost":
 elif model_option == "Naive Bayes":
     model = load("gaussian_nb_model.joblib")
 
-# --- Define expected feature columns ---
-expected_columns = ['person_age', 'person_income', 'person_emp_length', 
-                    'loan_amnt', 'loan_int_rate', 'loan_percent_income', 
-                    'cb_person_cred_hist_length']
-
 # --- Streamlit App Title ---
-st.title("🏦 Credit Risk Prediction Dashboard (No Dataset, No Scaler)")
+st.title("🏦 Credit Risk Prediction Dashboard (Fixed Features Matching Training)")
 
 # --- Sidebar - User Input Form ---
 st.sidebar.header("📝 Applicant Information")
 with st.sidebar.form(key="input_form"):
     person_age = st.number_input("Age", min_value=18, max_value=100, value=30)
-    person_income = st.number_input("Income ($)", min_value=0.0, value=50000.0)
+    person_income = st.number_input("Annual Income ($)", min_value=0.0, value=50000.0)
+    person_home_ownership = st.selectbox("Home Ownership", ["RENT", "OWN", "MORTGAGE"])
     person_emp_length = st.number_input("Employment Length (Years)", min_value=0, value=5)
+    loan_intent = st.selectbox("Loan Intent", ["PERSONAL", "EDUCATION", "MEDICAL", "VENTURE", "HOMEIMPROVEMENT", "DEBTCONSOLIDATION"])
     loan_amnt = st.number_input("Loan Amount ($)", min_value=0.0, value=10000.0)
     loan_int_rate = st.number_input("Loan Interest Rate (%)", min_value=0.0, max_value=100.0, value=10.0)
     if person_income > 0:
@@ -39,30 +36,36 @@ with st.sidebar.form(key="input_form"):
     else:
         loan_percent_income = 0.0
     st.number_input("Loan Percent Income (%)", value=loan_percent_income, format="%.2f", disabled=True)
+    cb_person_default_on_file = st.selectbox("Default on File", ["N", "Y"])
     cb_person_cred_hist_length = st.number_input("Credit History Length (Years)", min_value=0, value=8)
 
     submit_button = st.form_submit_button(label="Predict")
 
 # --- Prepare Input and Predict ---
 if submit_button:
+    # Encode categorical variables
+    home_ownership_mapping = {"RENT": 0, "OWN": 1, "MORTGAGE": 2}
+    loan_intent_mapping = {"PERSONAL": 0, "EDUCATION": 1, "MEDICAL": 2, "VENTURE": 3, "HOMEIMPROVEMENT": 4, "DEBTCONSOLIDATION": 5}
+    default_mapping = {"N": 0, "Y": 1}
+
     input_data = pd.DataFrame({
         'person_age': [person_age],
         'person_income': [person_income],
+        'person_home_ownership': [home_ownership_mapping.get(person_home_ownership, 0)],
         'person_emp_length': [person_emp_length],
+        'loan_intent': [loan_intent_mapping.get(loan_intent, 0)],
         'loan_amnt': [loan_amnt],
         'loan_int_rate': [loan_int_rate],
         'loan_percent_income': [loan_percent_income],
+        'cb_person_default_on_file': [default_mapping.get(cb_person_default_on_file, 0)],
         'cb_person_cred_hist_length': [cb_person_cred_hist_length],
     })
 
-    # Force the input_data to match expected model training columns
-    input_data = input_data[expected_columns]
-
-    # Predict probabilities
+    # --- Predict probabilities
     probability = model.predict_proba(input_data)
     prediction = (probability[:, 1] >= 0.5).astype(int)  # Default threshold 0.5
 
-    # Display Prediction Result
+    # --- Display Prediction Result
     st.subheader("🔮 Prediction Result")
     if prediction[0] == 0:
         st.success("✅ **Prediction: Low Risk Applicant**")
@@ -72,12 +75,11 @@ if submit_button:
     st.write(f"Low Risk Probability: **{probability[0][0]*100:.2f}%**")
     st.write(f"High Risk Probability: **{probability[0][1]*100:.2f}%**")
 
-    # --- Simulate a Dummy "Test Set" for Evaluation ---
-    # Assume the user is the only "test" data
-    y_test_simulated = np.array([0])  # Let's say ground truth is Low Risk
+    # --- Simulate Dummy Test for Metrics ---
+    y_test_simulated = np.array([0])  # Assume "True" label is Low Risk for simulation
     y_pred_simulated = prediction
 
-    # Metrics (based on 1 sample, demo only)
+    # Metrics (based on 1 sample, for demonstration)
     accuracy = accuracy_score(y_test_simulated, y_pred_simulated)
     precision = precision_score(y_test_simulated, y_pred_simulated, zero_division=0)
     recall = recall_score(y_test_simulated, y_pred_simulated, zero_division=0)
