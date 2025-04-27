@@ -54,7 +54,6 @@ st.title("🏦 Credit Risk Prediction Dashboard")
 # Sidebar - Settings
 st.sidebar.header("🔍 Model and Input Settings")
 model_option = st.sidebar.selectbox("Select Model", ["Random Forest", "SVM", "Naive Bayes"])
-use_smote = st.sidebar.checkbox("Apply SMOTE to Balance Classes", value=True)
 apply_pca = st.sidebar.checkbox("Apply PCA", value=True)
 pca_mode = st.sidebar.radio("PCA Mode", ["Manual", "Auto (95% Variance)"])
 if pca_mode == "Manual":
@@ -78,11 +77,6 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
-
-# Apply SMOTE if selected
-if use_smote:
-    smote = SMOTE(random_state=42)
-    X_train, y_train = smote.fit_resample(X_train, y_train)
 
 # Apply PCA if selected
 if apply_pca:
