@@ -16,6 +16,11 @@ elif model_option == "XGBoost":
 elif model_option == "Naive Bayes":
     model = load("gaussian_nb_model.joblib")
 
+# --- Define expected feature columns ---
+expected_columns = ['person_age', 'person_income', 'person_emp_length', 
+                    'loan_amnt', 'loan_int_rate', 'loan_percent_income', 
+                    'cb_person_cred_hist_length']
+
 # --- Streamlit App Title ---
 st.title("🏦 Credit Risk Prediction Dashboard (No Dataset, No Scaler)")
 
@@ -33,6 +38,7 @@ with st.sidebar.form(key="input_form"):
         loan_percent_income = 0.0
     st.number_input("Loan Percent Income (%)", value=loan_percent_income, format="%.2f", disabled=True)
     cb_person_cred_hist_length = st.number_input("Credit History Length (Years)", min_value=0, value=8)
+
     submit_button = st.form_submit_button(label="Predict")
 
 # --- Prepare Input and Predict ---
@@ -46,6 +52,9 @@ if submit_button:
         'loan_percent_income': [loan_percent_income],
         'cb_person_cred_hist_length': [cb_person_cred_hist_length],
     })
+
+    # Force the input_data to match expected model training columns
+    input_data = input_data[expected_columns]
 
     # Predict
     probability = model.predict_proba(input_data)
