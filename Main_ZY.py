@@ -64,25 +64,6 @@ pca_mode = st.sidebar.radio("PCA Mode", ["Manual", "Auto (95% Variance)"])
 if pca_mode == "Manual":
     n_components = st.sidebar.slider("Number of PCA Components", min_value=2, max_value=10, value=5)
 
-# Load Data
-df = load_data()
-df = df.assign(
-    person_emp_length=df['person_emp_length'].fillna(df['person_emp_length'].median()),
-    loan_int_rate=df['loan_int_rate'].fillna(df['loan_int_rate'].median())
-)
-
-# Data Split
-X = df.drop(columns=['loan_status'], axis=1)
-X = X.select_dtypes(include=[np.number])
-y = df['loan_status']
-
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# Scaling
-scaler = StandardScaler()
-X_train = scaler.fit_transform(X_train)
-X_test = scaler.transform(X_test)
-
 # Apply PCA if selected
 if apply_pca:
     if pca_mode == "Manual":
