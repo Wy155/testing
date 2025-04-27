@@ -54,7 +54,7 @@ st.title("🏦 Credit Risk Prediction Dashboard")
 
 # Sidebar - Settings
 st.sidebar.header("🔍 Model and Input Settings")
-model_option = st.sidebar.selectbox("Select Model", ["Random Forest", "SVM", "Naive Bayes"])
+model_option = st.sidebar.selectbox("Select Model", ["Random Forest", "SVM", "Naive Bayes", "XGBoost"])
 apply_pca = st.sidebar.checkbox("Apply PCA", value=True)
 pca_mode = st.sidebar.radio("PCA Mode", ["Manual", "Auto (95% Variance)"])
 if pca_mode == "Manual":
