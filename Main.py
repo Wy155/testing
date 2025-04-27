@@ -105,7 +105,7 @@ st.sidebar.markdown(f" **Recommended Optimal Threshold (Youden's J): {optimal_th
 accuracy, precision, recall, f1, roc_auc, y_test_pred, _ = evaluate_model(model, X_test, y_test, threshold)
 
 # Input Form
-st.sidebar.header("\ud83d\udcdd Input Features")
+st.sidebar.header("Input Features")
 with st.sidebar.form(key="input_form"):
     person_age = st.number_input("Person Age", min_value=0, max_value=100, value=25)
     person_income = st.number_input("Person Income", min_value=0, value=50000)
