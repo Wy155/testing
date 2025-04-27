@@ -79,7 +79,9 @@ if model_option == "Random Forest":
 elif model_option == "SVM":
     model = SVC(probability=True, random_state=42)
 elif model_option == "Naive Bayes":
-    model = GaussianNB()
+    param_grid = {'var_smoothing': np.logspace(-9, -6, 10)}
+    grid_GaussianNB = GridSearchCV(GaussianNB(), param_grid, cv=5)
+    model = grid_GaussianNB.fit(X_train, y_train)
 
 model.fit(X_train, y_train)
 accuracy, precision, recall, f1, roc_auc, y_test_pred = evaluate_model(model, X_test, y_test)
