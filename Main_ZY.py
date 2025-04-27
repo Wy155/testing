@@ -19,7 +19,7 @@ elif model_option == "Naive Bayes":
     model = load("gaussian_nb_model.joblib")
 
 # --- Streamlit App Title ---
-st.title("🏦 Credit Risk Prediction Dashboard (Fixed Features Matching Training)")
+st.title("🏦 Credit Risk Prediction Dashboard (Fully Fixed Version)")
 
 # --- Sidebar - User Input Form ---
 st.sidebar.header("📝 Applicant Information")
@@ -61,8 +61,12 @@ if submit_button:
         'cb_person_cred_hist_length': [cb_person_cred_hist_length],
     })
 
-    # --- Predict probabilities
-    probability = model.predict_proba(input_data)
+    # --- Predict
+    if model_option == "Naive Bayes":
+        probability = model.predict_proba(input_data.values)  # Naive Bayes needs array
+    else:
+        probability = model.predict_proba(input_data)         # XGBoost/GBC accept DataFrame
+
     prediction = (probability[:, 1] >= 0.5).astype(int)  # Default threshold 0.5
 
     # --- Display Prediction Result
