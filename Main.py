@@ -52,13 +52,13 @@ model_option = st.sidebar.selectbox("Select a model:", ["Random Forest", "SVM", 
 
 st.sidebar.header("📝 Input Features")
 
-person_age = st.sidebar.number_input("Person Age", min_value=0, max_value=100, value=30)
-person_income = st.sidebar.number_input("Person Income", min_value=0, value=50000)
-person_emp_length = st.sidebar.number_input("Person Employment Length (years)", min_value=0, max_value=50, value=5)
-loan_amnt = st.sidebar.number_input("Loan Amount", min_value=0, value=10000)
-loan_int_rate = st.sidebar.number_input("Loan Interest Rate (%)", min_value=0.0, max_value=100.0, value=5.0)
-loan_percent_income = st.sidebar.number_input("Loan Percent of Income (%)", min_value=0.0, max_value=100.0, value=10.0)
-cb_person_cred_hist_length = st.sidebar.number_input("Credit History Length (years)", min_value=0, max_value=50, value=10)
+person_age = st.sidebar.number_input("Person Age", min_value=0, max_value=100, value=18)
+person_income = st.sidebar.number_input("Person Income", min_value=0, value=0)
+person_emp_length = st.sidebar.number_input("Person Employment Length (years)", min_value=0, max_value=50, value=0)
+loan_amnt = st.sidebar.number_input("Loan Amount", min_value=0, value=0)
+loan_int_rate = st.sidebar.number_input("Loan Interest Rate (%)", min_value=0.0, max_value=100.0, value=0.0)
+loan_percent_income = st.sidebar.number_input("Loan Percent of Income (%)", min_value=0.0, max_value=100.0, value=0.0)
+cb_person_cred_hist_length = st.sidebar.number_input("Credit History Length (years)", min_value=0, max_value=50, value=0)
 
 input_data = pd.DataFrame({
     'person_age': [person_age],
@@ -80,7 +80,7 @@ elif model_option == "SVM":
     model = SVC(probability=True, random_state=42)
 elif model_option == "Naive Bayes":
     param_grid = {'var_smoothing': np.logspace(-9, -6, 10)}
-    grid_GaussianNB = GridSearchCV(GaussianNB(), param_grid, cv=5)
+    grid_GaussianNB = GridSearchCV(GaussianNB((priors=[0.5,0.5])), param_grid, cv=5)
     model = grid_GaussianNB.fit(X_train, y_train)
 
 model.fit(X_train, y_train)
