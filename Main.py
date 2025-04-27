@@ -26,7 +26,7 @@ def evaluate_model(model, X_test, y_test, threshold=0.5):
     precision = precision_score(y_test, y_pred)
     recall = recall_score(y_test, y_pred)
     f1 = f1_score(y_test, y_pred)
-    roc_auc = roc_auc_score(y_test, y_prob)  # Use prob for ROC AUC
+    roc_auc = roc_auc_score(y_test, y_prob)
     return accuracy, precision, recall, f1, roc_auc, y_pred, y_prob
 
 def get_model(model_option):
@@ -51,14 +51,16 @@ def find_optimal_threshold(y_true, y_prob):
 # Title
 st.title("🏦 Credit Risk Prediction Dashboard")
 
-# Sidebar
+# Sidebar - Settings
 st.sidebar.header("🔍 Model and Input Settings")
 model_option = st.sidebar.selectbox("Select Model", ["Random Forest", "SVM", "Naive Bayes"])
-use_smote = st.sidebar.checkbox("Apply SMOTE to Balance Classes (Recommended for Naive Bayes)", value=True)
-apply_pca = st.sidebar.checkbox("Apply PCA (Recommended for Naive Bayes)", value=True)
-n_components = st.sidebar.slider("Number of PCA Components", min_value=2, max_value=10, value=5)
+use_smote = st.sidebar.checkbox("Apply SMOTE to Balance Classes", value=True)
+apply_pca = st.sidebar.checkbox("Apply PCA", value=True)
+pca_mode = st.sidebar.radio("PCA Mode", ["Manual", "Auto (95% Variance)"])
+if pca_mode == "Manual":
+    n_components = st.sidebar.slider("Number of PCA Components", min_value=2, max_value=10, value=5)
 
-# Data Loading
+# Load Data
 df = load_data()
 df = df.assign(
     person_emp_length=df['person_emp_length'].fillna(df['person_emp_length'].median()),
@@ -84,7 +86,10 @@ if use_smote:
 
 # Apply PCA if selected
 if apply_pca:
-    pca = PCA(n_components=n_components)
+    if pca_mode == "Manual":
+        pca = PCA(n_components=n_components)
+    else:  # Auto (keep 95% variance)
+        pca = PCA(n_components=0.95)
     X_train = pca.fit_transform(X_train)
     X_test = pca.transform(X_test)
 
