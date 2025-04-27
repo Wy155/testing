@@ -8,7 +8,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix, roc_curve
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
-from sklearn.naive_bayes import GaussianNB,MultinomialNB
+from sklearn.naive_bayes import GaussianNB, MultinomialNB
 from imblearn.over_sampling import SMOTE
 
 # --- Functions ---
@@ -18,13 +18,14 @@ def load_data():
     df = pd.read_csv("credit_risk_dataset.csv")
     return df
 
-def evaluate_model(model, X_test, y_test):
-    y_pred = model.predict(X_test)
+def evaluate_model(model, X_test, y_test, threshold=0.5):
+    y_prob = model.predict_proba(X_test)[:, 1]
+    y_pred = (y_prob >= threshold).astype(int)
     accuracy = accuracy_score(y_test, y_pred)
     precision = precision_score(y_test, y_pred)
     recall = recall_score(y_test, y_pred)
     f1 = f1_score(y_test, y_pred)
-    roc_auc = roc_auc_score(y_test, y_pred)
+    roc_auc = roc_auc_score(y_test, y_prob)  # Use prob for ROC AUC
     return accuracy, precision, recall, f1, roc_auc, y_pred
 
 def get_model(model_option):
@@ -47,6 +48,7 @@ st.title("🏦 Credit Risk Prediction Dashboard")
 st.sidebar.header("🔍 Model and Input Settings")
 model_option = st.sidebar.selectbox("Select Model", ["Random Forest", "SVM", "Naive Bayes"])
 use_smote = st.sidebar.checkbox("Apply SMOTE to Balance Classes (Recommended for Naive Bayes)", value=True)
+threshold = st.sidebar.slider("Decision Threshold", 0.0, 1.0, 0.5, 0.01)
 
 # Data Loading
 df = load_data()
@@ -77,7 +79,7 @@ model = get_model(model_option)
 model.fit(X_train, y_train)
 
 # Evaluate Model
-accuracy, precision, recall, f1, roc_auc, y_test_pred = evaluate_model(model, X_test, y_test)
+accuracy, precision, recall, f1, roc_auc, y_test_pred = evaluate_model(model, X_test, y_test, threshold)
 
 # Input Form
 st.sidebar.header("📝 Input Features")
@@ -106,8 +108,8 @@ input_data_scaled = scaler.transform(input_data)
 
 # Prediction
 if submit_button:
-    prediction = model.predict(input_data_scaled)
     probability = model.predict_proba(input_data_scaled)
+    prediction = (probability[:,1] >= threshold).astype(int)
 
     st.subheader("🔮 Prediction Result")
     if prediction[0] == 0:
@@ -117,9 +119,10 @@ if submit_button:
 
     st.write(f"Low Risk Probability: **{probability[0][0]*100:.2f}%**")
     st.write(f"High Risk Probability: **{probability[0][1]*100:.2f}%**")
+    st.write(f"Applied Threshold: **{threshold:.2f}**")
 
 # Show Metrics
-st.subheader(f"📊 {model_option} Model Performance")
+st.subheader(f"📊 {model_option} Model Performance (Threshold = {threshold:.2f})")
 st.table(pd.DataFrame({
     'Metric': ['Accuracy', 'Precision', 'Recall', 'F1 Score', 'ROC AUC'],
     'Score': [f"{accuracy:.4f}", f"{precision:.4f}", f"{recall:.4f}", f"{f1:.4f}", f"{roc_auc:.4f}"]
