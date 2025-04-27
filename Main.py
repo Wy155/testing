@@ -80,7 +80,7 @@ elif model_option == "SVM":
     model = SVC(probability=True, random_state=42)
 elif model_option == "Naive Bayes":
     param_grid = {'var_smoothing': np.logspace(-9, -6, 10)}
-    grid_GaussianNB = GridSearchCV(GaussianNB((priors=[0.5,0.5])), param_grid, cv=5)
+    grid_GaussianNB = GridSearchCV(GaussianNB(priors=[0.5,0.5]), param_grid, cv=5)
     model = grid_GaussianNB.fit(X_train, y_train)
 
 model.fit(X_train, y_train)
