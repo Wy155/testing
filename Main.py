@@ -111,8 +111,18 @@ with st.sidebar.form(key="input_form"):
     person_income = st.number_input("Person Income", min_value=0, value=50000)
     person_emp_length = st.number_input("Employment Length (years)", min_value=0, max_value=50, value=5)
     loan_amnt = st.number_input("Loan Amount", min_value=0, value=10000)
-    loan_int_rate = st.number_input("Loan Interest Rate (%)", min_value=0.0, max_value=100.0, value=5.0)
-    loan_percent_income = st.number_input("Loan Percent Income (%)", min_value=0.0, max_value=100.0, value=10.0)
+    loan_int_rate = st.number_input("Loan Interest Rate (%)", min_value=0.0, max_value=100.0, value=5.0）
+    if person_income > 0:
+        loan_percent_income = (loan_amnt / person_income) * 100
+    else:
+        loan_percent_income = 0.0
+    
+    st.sidebar.number_input(
+        "Loan Percent Income (%)",
+        value=loan_percent_income,
+        format="%.2f",
+        disabled=True
+    )
     cb_person_cred_hist_length = st.number_input("Credit History Length (years)", min_value=0, max_value=50, value=10)
     submit_button = st.form_submit_button(label="Predict")
 
