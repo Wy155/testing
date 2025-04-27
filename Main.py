@@ -35,9 +35,7 @@ def get_model(model_option):
     elif model_option == "SVM":
         model = SVC(probability=True, random_state=42)
     elif model_option == "Naive Bayes":
-        param_grid = {'var_smoothing': np.logspace(-9, -6, 10)}
-        grid_GaussianNB = GridSearchCV(GaussianNB(priors=[0.5, 0.5]), param_grid, cv=5)
-        model = grid_GaussianNB
+        model = GaussianNB(priors=[0.5, 0.5])
     return model
 
 def find_optimal_threshold(y_true, y_prob):
