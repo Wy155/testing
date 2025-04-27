@@ -9,7 +9,7 @@ from sklearn.decomposition import PCA
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix, roc_curve
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
-from sklearn.naive_bayes import GaussianNB, MultinomialNB
+from sklearn.naive_bayes import GaussianNB
 from imblearn.over_sampling import SMOTE
 
 # --- Functions ---
@@ -36,7 +36,7 @@ def get_model(model_option):
         model = SVC(probability=True, random_state=42)
     elif model_option == "Naive Bayes":
         param_grid = {'var_smoothing': np.logspace(-9, -6, 10)}
-        grid_GaussianNB = GridSearchCV(MultinomialNB(priors=[0.5, 0.5]), param_grid, cv=5)
+        grid_GaussianNB = GridSearchCV(GaussianNB(priors=[0.5, 0.5]), param_grid, cv=5)
         model = grid_GaussianNB
     return model
 
