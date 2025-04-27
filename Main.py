@@ -18,6 +18,10 @@ def load_data():
 
 # Load data
 df = load_data()
+df = df.assign(
+    person_emp_length=df['person_emp_length'].fillna(df['person_emp_length'].median()),
+    loan_int_rate=df['loan_int_rate'].fillna(df['loan_int_rate'].median())
+)
 
 # Split data
 X = df.drop(columns=['loan_status'], axis=1)
