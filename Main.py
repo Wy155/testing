@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+from xgboost import XGBClassifier
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
@@ -36,6 +37,8 @@ def get_model(model_option):
         model = SVC(probability=True, random_state=42)
     elif model_option == "Naive Bayes":
         model = GaussianNB(priors=[0.5, 0.5])
+    elif model_option == "XGBoost":
+        model = XGBClassifier(use_label_encoder=False, eval_metric='logloss', random_state=42)
     return model
 
 def find_optimal_threshold(y_true, y_prob):
