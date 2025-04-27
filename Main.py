@@ -49,10 +49,10 @@ def find_optimal_threshold(y_true, y_prob):
 # --- Main App ---
 
 # Title
-st.title("\ud83c\udfe6 Credit Risk Prediction Dashboard")
+st.title("Credit Risk Prediction Dashboard")
 
 # Sidebar - Settings
-st.sidebar.header("\ud83d\udd0d Model and Input Settings")
+st.sidebar.header("Model and Input Settings")
 model_option = st.sidebar.selectbox("Select Model", ["Random Forest", "Gradient Boosting (GBC)", "Naive Bayes", "XGBoost"])
 apply_pca = st.sidebar.checkbox("Apply PCA", value=True)
 pca_mode = st.sidebar.radio("PCA Mode", ["Manual", "Auto (95% Variance)"])
@@ -99,7 +99,7 @@ optimal_threshold = find_optimal_threshold(y_test, y_prob)
 
 # Sidebar - Threshold Tuning
 threshold = st.sidebar.slider("Decision Threshold", 0.0, 1.0, optimal_threshold, 0.01)
-st.sidebar.markdown(f"\ud83e\uddd1\u200d\ud83e\udd16 **Recommended Optimal Threshold (Youden's J): {optimal_threshold:.2f}**")
+st.sidebar.markdown(f" **Recommended Optimal Threshold (Youden's J): {optimal_threshold:.2f}**")
 
 # Evaluate with selected threshold
 accuracy, precision, recall, f1, roc_auc, y_test_pred, _ = evaluate_model(model, X_test, y_test, threshold)
@@ -136,25 +136,25 @@ if submit_button:
     probability = model.predict_proba(input_data_scaled)
     prediction = (probability[:,1] >= threshold).astype(int)
 
-    st.subheader("\ud83d\udd2e Prediction Result")
+    st.subheader("Prediction Result")
     if prediction[0] == 0:
-        st.success("\u2705 **Low Risk**")
+        st.success(" **Low Risk**")
     else:
-        st.error("\u26a0\ufe0f **High Risk**")
+        st.error("**High Risk**")
 
     st.write(f"Low Risk Probability: **{probability[0][0]*100:.2f}%**")
     st.write(f"High Risk Probability: **{probability[0][1]*100:.2f}%**")
     st.write(f"Applied Threshold: **{threshold:.2f}**")
 
 # Show Metrics
-st.subheader(f"\ud83d\udcca {model_option} Model Performance (Threshold = {threshold:.2f})")
+st.subheader(f" {model_option} Model Performance (Threshold = {threshold:.2f})")
 st.table(pd.DataFrame({
     'Metric': ['Accuracy', 'Precision', 'Recall', 'F1 Score', 'ROC AUC'],
     'Score': [f"{accuracy:.4f}", f"{precision:.4f}", f"{recall:.4f}", f"{f1:.4f}", f"{roc_auc:.4f}"]
 }))
 
 # Confusion Matrix
-st.subheader("\ud83e\uddec Confusion Matrix on Test Set")
+st.subheader(" Confusion Matrix on Test Set")
 cm = confusion_matrix(y_test, y_test_pred)
 fig, ax = plt.subplots()
 sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=["Low Risk", "High Risk"], yticklabels=["Low Risk", "High Risk"])
@@ -163,7 +163,7 @@ plt.ylabel("True")
 st.pyplot(fig)
 
 # ROC Curve
-st.subheader("\ud83d\udcc8 ROC Curve")
+st.subheader(" ROC Curve")
 fpr, tpr, _ = roc_curve(y_test, y_prob)
 fig2, ax2 = plt.subplots()
 ax2.plot(fpr, tpr, color='blue', label=f"ROC curve (AUC = {roc_auc_default:.2f})")
